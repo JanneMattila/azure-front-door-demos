@@ -6,23 +6,18 @@ tba
 
 ## Setup
 
-### Variables
-
-```powershell
-# FQDN of the AFD:
-$domain = "contoso0000000025.swedencentral.cloudapp.azure.com"
-
-# VM password
-$vmPasswordPlainText = "<your VM password>"
-$vmPassword = ConvertTo-SecureString -String $vmPasswordPlainText -Force -AsPlainText
-```
-
 ### Deploy
 
 ```powershell
+# VM password
+$vmPasswordPlainText = "<your VM password>"
+$vmPassword = ConvertTo-SecureString -String $vmPasswordPlainText -Force -AsPlainText
+
 $result = .\deploy.ps1 -FrontDoorName "afdcontoso00000001" -VMPassword $vmPassword
 $result
 $result.outputs.fqdn.value
+
+$domain = $result.outputs.fqdn.value
 ```
 
 ```powershell
@@ -41,6 +36,7 @@ start "http://$($result.outputs.vm2FQDN.value)"
 
 #
 curl "http://$domain" --verbose
+curl "https://$domain"
 
 # Restart entire IIS
 iisreset

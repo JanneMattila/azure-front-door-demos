@@ -1,7 +1,7 @@
 param parentName string
 param location string
 
-resource parentFrontDoor 'Microsoft.Network/frontDoors@2021-06-01' existing = {
+resource parentFrontDoor 'Microsoft.Cdn/profiles@2024-09-01' existing = {
   name: parentName
 }
 
@@ -19,6 +19,10 @@ resource diagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-pr
     logs: [
       {
         category: 'FrontDoorAccessLog'
+        enabled: true
+      }
+      {
+        category: 'FrontDoorHealthProbeLog'
         enabled: true
       }
       {

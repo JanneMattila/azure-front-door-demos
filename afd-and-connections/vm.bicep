@@ -92,8 +92,8 @@ resource vmInstall 'Microsoft.Compute/virtualMachines/runCommands@2023-07-01' = 
       script: '''
         Install-WindowsFeature -name Web-Server -IncludeAllSubFeature
         Remove-Item C:\Inetpub\wwwroot\*.*
-        Invoke-WebRequest "https://raw.githubusercontent.com/JanneMattila/azure-application-gateway-demos/refs/heads/main/appgw-and-connections/Default.aspx" -OutFile C:\Inetpub\wwwroot\Default.aspx
-        Invoke-WebRequest "https://raw.githubusercontent.com/JanneMattila/azure-application-gateway-demos/refs/heads/main/appgw-and-connections/Probe.aspx" -OutFile C:\Inetpub\wwwroot\Probe.aspx
+        Invoke-WebRequest "https://raw.githubusercontent.com/JanneMattila/azure-front-door-demos/refs/heads/main/afd-and-connections/Default.aspx" -OutFile C:\Inetpub\wwwroot\Default.aspx
+        Invoke-WebRequest "https://raw.githubusercontent.com/JanneMattila/azure-front-door-demos/refs/heads/main/afd-and-connections/Probe.aspx" -OutFile C:\Inetpub\wwwroot\Probe.aspx
       '''
     }
   }

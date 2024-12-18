@@ -48,13 +48,15 @@ resource originGroup 'Microsoft.Cdn/profiles/originGroups@2020-09-01' = {
   name: 'origingroup1'
   parent: frontDoorProfile
   properties: {
+    sessionAffinityState: 'Disabled'
     loadBalancingSettings: {
-      sampleSize: 3
-      successfulSamplesRequired: 2
+      sampleSize: 1
+      successfulSamplesRequired: 1
+      additionalLatencyInMilliseconds: 100
     }
     healthProbeSettings: {
       probePath: '/Probe.aspx'
-      probeRequestType: 'HEAD'
+      probeRequestType: 'GET'
       probeProtocol: 'Http'
       probeIntervalInSeconds: 5
     }

@@ -26,18 +26,28 @@ AzureDiagnostics
 | summarize Count=count(pop_s) by pop_s
 ```
 
+```sql
+AzureDiagnostics
+| where Category == "FrontDoorWebApplicationFirewallLog" and action_s != "Log"
+| take 500
+```
+
 ### Test
 
-Check `X-Cache` header if it is `TCP_HIT` or `TCP_MISS`.
+Check `X-Cache` header if it is `TCP_HIT` or `TCP_MISS` or `TCP_REMOTE_HIT`
+([Response headers](https://learn.microsoft.com/en-us/azure/frontdoor/front-door-caching?pivots=front-door-standard-premium#response-headers)):
 
 ```powershell
-curl "https://$domain/" --verbose
-curl "https://$domain/pages/echo" --verbose
-curl "https://$domain/pages/echocache" --verbose
+curl -sIXGET "https://$domain/"
+curl -sIXGET "https://$domain/pages/echo"
+curl -sIXGET "https://$domain/pages/echocache" # 10 seconds cache
+curl -sIXGET "https://$domain/pages/echocachenever" # Never cached
 
-curl "https://$domain/pages/echo?id=$([Guid]::NewGuid().Guid)" --verbose
+# Never cached since using "queryStringCachingBehavior: 'UseQueryString'":
+curl -sIXGET "https://$domain/pages/echo?id=$([Guid]::NewGuid().Guid)"
 
-
+# These requests will be blocked by the WAF:
+curl -sIXPOST--data "{ 'data': 'DROP TABLE People'  }" -H "Content-Type: application/json" "https://$domain/api/echo"
 curl --data "{ 'data': 'DROP TABLE People'  }" -H "Content-Type: application/json" "https://$domain/api/echo" --verbose
 ```
 

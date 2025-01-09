@@ -5,8 +5,11 @@ Param (
     [Parameter(HelpMessage = "Azure Front Door name")]
     [string] $FrontDoorName = "afdcontosobasic0001",
     
-    [Parameter(HelpMessage = "Backend address", Mandatory = $true)]
-    [string] $BackendAddress,
+    [Parameter(HelpMessage = "Backend address 1", Mandatory = $true)]
+    [string] $BackendAddress1,
+        
+    [Parameter(HelpMessage = "Backend address 2", Mandatory = $true)]
+    [string] $BackendAddress2,
     
     [Parameter(HelpMessage = "Deployment target resource group location")]
     [string] $Location = "swedencentral",
@@ -40,7 +43,8 @@ if ($null -eq (Get-AzResourceGroup -Name $ResourceGroupName -Location $Location 
 # Additional parameters that we pass to the template deployment
 $additionalParameters = New-Object -TypeName hashtable
 $additionalParameters['frontDoorName'] = $FrontDoorName
-$additionalParameters['backendAddress'] = $BackendAddress
+$additionalParameters['backendAddress1'] = $BackendAddress1
+$additionalParameters['backendAddress2'] = $BackendAddress2
 
 $result = New-AzResourceGroupDeployment `
     -DeploymentName $deploymentName `

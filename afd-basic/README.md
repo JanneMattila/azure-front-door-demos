@@ -9,7 +9,7 @@
 ### Deploy
 
 ```powershell
-$result = .\deploy.ps1 -BackendAddress "app.contoso.com"
+$result = .\deploy.ps1 -BackendAddress1 "app1.contoso.com" -BackendAddress2 "app2.contoso.com"
 $result
 $result.outputs.fqdn.value
 
@@ -39,6 +39,8 @@ Check `X-Cache` header if it is `TCP_HIT` or `TCP_MISS` or `TCP_REMOTE_HIT`
 
 ```powershell
 curl -sIXGET "https://$domain/"
+curl -sIXGET "https://$domain/ip"
+curl "https://$domain/ip"
 curl -sIXGET "https://$domain/pages/echo"
 curl -sIXGET "https://$domain/pages/echocache" # 10 seconds cache
 curl -sIXGET "https://$domain/pages/echocachenever" # Never cached

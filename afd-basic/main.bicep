@@ -1,5 +1,6 @@
 param location string = resourceGroup().location
-param backendAddress string
+param backendAddress1 string
+param backendAddress2 string
 param frontDoorName string
 
 var skuName = 'Premium_AzureFrontDoor'
@@ -32,8 +33,27 @@ resource endpoint 'Microsoft.Cdn/profiles/afdEndpoints@2024-09-01' = {
   }
 }
 
-resource originGroup 'Microsoft.Cdn/profiles/originGroups@2020-09-01' = {
+resource originGroup1 'Microsoft.Cdn/profiles/originGroups@2020-09-01' = {
   name: 'origingroup1'
+  parent: frontDoorProfile
+  properties: {
+    sessionAffinityState: 'Disabled'
+    loadBalancingSettings: {
+      sampleSize: 4
+      successfulSamplesRequired: 2
+      additionalLatencyInMilliseconds: 0
+    }
+    healthProbeSettings: {
+      probePath: '/'
+      probeRequestType: 'HEAD'
+      probeProtocol: 'Https'
+      probeIntervalInSeconds: 15
+    }
+  }
+}
+
+resource originGroup2 'Microsoft.Cdn/profiles/originGroups@2020-09-01' = {
+  name: 'origingroup2'
   parent: frontDoorProfile
   properties: {
     sessionAffinityState: 'Disabled'
@@ -53,10 +73,23 @@ resource originGroup 'Microsoft.Cdn/profiles/originGroups@2020-09-01' = {
 
 resource origin1 'Microsoft.Cdn/profiles/originGroups/origins@2020-09-01' = {
   name: 'origin1'
-  parent: originGroup
+  parent: originGroup1
   properties: {
-    hostName: backendAddress
-    originHostHeader: backendAddress
+    hostName: backendAddress1
+    originHostHeader: backendAddress1
+    httpPort: 80
+    httpsPort: 443
+    priority: 2
+    weight: 10
+  }
+}
+
+resource origin2 'Microsoft.Cdn/profiles/originGroups/origins@2020-09-01' = {
+  name: 'origin2'
+  parent: originGroup2
+  properties: {
+    hostName: backendAddress2
+    originHostHeader: backendAddress2
     httpPort: 80
     httpsPort: 443
     priority: 1
@@ -64,14 +97,19 @@ resource origin1 'Microsoft.Cdn/profiles/originGroups/origins@2020-09-01' = {
   }
 }
 
-resource ruleset 'Microsoft.Cdn/profiles/ruleSets@2024-02-01' = {
-  name: 'ruleset1'
+resource ruleSet1 'Microsoft.Cdn/profiles/ruleSets@2024-02-01' = {
+  name: 'ruleSet1'
+  parent: frontDoorProfile
+}
+
+resource ruleSet2 'Microsoft.Cdn/profiles/ruleSets@2024-02-01' = {
+  name: 'ruleSet2'
   parent: frontDoorProfile
 }
 
 resource rule1 'Microsoft.Cdn/profiles/ruleSets/rules@2024-02-01' = {
   name: 'rule1'
-  parent: ruleset
+  parent: ruleSet1
   properties: {
     order: 100
     conditions: [
@@ -103,7 +141,28 @@ resource rule1 'Microsoft.Cdn/profiles/ruleSets/rules@2024-02-01' = {
   }
 }
 
-resource route 'Microsoft.Cdn/profiles/afdEndpoints/routes@2020-09-01' = {
+resource rule2 'Microsoft.Cdn/profiles/ruleSets/rules@2024-02-01' = {
+  name: 'rule2'
+  parent: ruleSet2
+  properties: {
+    order: 100
+    conditions: []
+    actions: [
+      {
+        name: 'UrlRewrite'
+        parameters: {
+          typeName: 'DeliveryRuleUrlRewriteActionParameters'
+          sourcePattern: '/'
+          destination: '/'
+          preserveUnmatchedPath: false
+        }
+      }
+    ]
+    matchProcessingBehavior: 'Continue'
+  }
+}
+
+resource route1 'Microsoft.Cdn/profiles/afdEndpoints/routes@2020-09-01' = {
   name: 'route1'
   parent: endpoint
   dependsOn: [
@@ -111,7 +170,7 @@ resource route 'Microsoft.Cdn/profiles/afdEndpoints/routes@2020-09-01' = {
   ]
   properties: {
     originGroup: {
-      id: originGroup.id
+      id: originGroup1.id
     }
     supportedProtocols: [
       'Https'
@@ -137,7 +196,37 @@ resource route 'Microsoft.Cdn/profiles/afdEndpoints/routes@2020-09-01' = {
     }
     ruleSets: [
       {
-        id: ruleset.id
+        id: ruleSet1.id
+      }
+    ]
+  }
+}
+
+resource route2 'Microsoft.Cdn/profiles/afdEndpoints/routes@2024-02-01' = {
+  name: 'route2'
+  parent: endpoint
+  dependsOn: [
+    origin2
+  ]
+  properties: {
+    originGroup: {
+      id: originGroup2.id
+    }
+    supportedProtocols: [
+      'Https'
+    ]
+    patternsToMatch: [
+      '/ip/*'
+      '/ip'
+    ]
+    originPath: '/'
+    forwardingProtocol: 'HttpsOnly'
+    linkToDefaultDomain: 'Enabled'
+    httpsRedirect: 'Enabled'
+    cacheConfiguration: null
+    ruleSets: [
+      {
+        id: ruleSet2.id
       }
     ]
   }

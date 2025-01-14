@@ -173,6 +173,7 @@ resource route1 'Microsoft.Cdn/profiles/afdEndpoints/routes@2020-09-01' = {
       id: originGroup1.id
     }
     supportedProtocols: [
+      'Http'
       'Https'
     ]
     patternsToMatch: [
@@ -213,6 +214,7 @@ resource route2 'Microsoft.Cdn/profiles/afdEndpoints/routes@2024-02-01' = {
       id: originGroup2.id
     }
     supportedProtocols: [
+      'Http'
       'Https'
     ]
     patternsToMatch: [

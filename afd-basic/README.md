@@ -38,6 +38,10 @@ Check `X-Cache` header if it is `TCP_HIT` or `TCP_MISS` or `TCP_REMOTE_HIT`
 ([Response headers](https://learn.microsoft.com/en-us/azure/frontdoor/front-door-caching?pivots=front-door-standard-premium#response-headers)):
 
 ```powershell
+start "http://$domain"
+
+curl "http://$domain/" --verbose # Redirect to HTTPS
+
 curl -sIXGET "https://$domain/"
 curl -sIXGET "https://$domain/ip"
 curl "https://$domain/ip"
@@ -48,9 +52,20 @@ curl -sIXGET "https://$domain/pages/echocachenever" # Never cached
 # Never cached since using "queryStringCachingBehavior: 'UseQueryString'":
 curl -sIXGET "https://$domain/pages/echo?id=$([Guid]::NewGuid().Guid)"
 
-# These requests will be blocked by the WAF:
-curl -sIXPOST--data "{ 'data': 'DROP TABLE People'  }" -H "Content-Type: application/json" "https://$domain/api/echo"
-curl --data "{ 'data': 'DROP TABLE People'  }" -H "Content-Type: application/json" "https://$domain/api/echo" --verbose
+# Use APIs:
+$url = "https://$domain/api/echo"
+$data = @{
+    firstName = "John"
+    lastName = "Doe"
+}
+$body = ConvertTo-Json $data
+Invoke-RestMethod -Body $body -ContentType "application/json" -Method "POST" -DisableKeepAlive -Uri $url
+
+curl -d '{ "data": "Hello there!" }' -H "Content-Type: application/json" -X POST "https://$domain/api/echo"
+
+# This request will be blocked by the WAF:
+curl -d '{ "data": "alert(document.cookies)" }' -H "Content-Type: application/json" -X POST "https://$domain/api/echo"
+curl -d '{ "data": "--; DROP TABLE People" }' -H "Content-Type: application/json" -X POST "https://$domain/api/echo"
 ```
 
 ```bash

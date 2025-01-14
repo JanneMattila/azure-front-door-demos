@@ -48,6 +48,7 @@ curl "https://$domain/ip"
 curl -sIXGET "https://$domain/pages/echo"
 curl -sIXGET "https://$domain/pages/echocache" # 10 seconds cache
 curl -sIXGET "https://$domain/pages/echocachenever" # Never cached
+curl -sIXGET "https://$domain/some/page/that/does/not/exist"
 
 # Never cached since using "queryStringCachingBehavior: 'UseQueryString'":
 curl -sIXGET "https://$domain/pages/echo?id=$([Guid]::NewGuid().Guid)"

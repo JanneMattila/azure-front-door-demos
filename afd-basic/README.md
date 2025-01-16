@@ -65,7 +65,7 @@ Invoke-RestMethod -Body $body -ContentType "application/json" -Method "POST" -Di
 curl -d '{ "data": "Hello there!" }' -H "Content-Type: application/json" -X POST "https://$domain/api/echo"
 
 # This request will be blocked by the WAF:
-curl -d '{ "data": "alert(document.cookies)" }' -H "Content-Type: application/json" -X POST "https://$domain/api/echo"
+curl -d '{ "data": "alert(document.cookie)" }' -H "Content-Type: application/json" -X POST "https://$domain/api/echo"
 curl -d '{ "data": "--; DROP TABLE People" }' -H "Content-Type: application/json" -X POST "https://$domain/api/echo"
 ```
 

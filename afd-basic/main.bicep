@@ -234,7 +234,7 @@ resource route2 'Microsoft.Cdn/profiles/afdEndpoints/routes@2024-02-01' = {
   }
 }
 
-resource firewallPolicy 'Microsoft.Network/FrontDoorWebApplicationFirewallPolicies@2020-11-01' = {
+resource firewallPolicy 'Microsoft.Network/FrontDoorWebApplicationFirewallPolicies@2025-03-01' = {
   name: 'wafpolicy'
   location: 'global'
   sku: {
@@ -243,7 +243,111 @@ resource firewallPolicy 'Microsoft.Network/FrontDoorWebApplicationFirewallPolici
   properties: {
     policySettings: {
       mode: 'Prevention'
+      customBlockResponseStatusCode: 403
+      customBlockResponseBody: loadFileAsBase64('403.html')
     }
+    customRules: {
+      rules: [
+        {
+        priority: 10
+        name: 'RuleAllowCorporateIPs'
+        action: 'Allow'
+        ruleType: 'MatchRule'
+        matchConditions: [
+          {
+            operator: 'IPMatch'
+            matchVariable: 'SocketAddr'
+            matchValue: [
+              '192.168.0.0/16'
+            ]
+          }
+        ]
+      }
+      {
+        priority: 30
+        name: 'RuleBlockIPs'
+        action: 'Block'
+        ruleType: 'MatchRule'
+        matchConditions: [
+          {
+            operator: 'IPMatch'
+            matchVariable: 'SocketAddr'
+            matchValue: [
+              '1.2.3.4'
+              '2.3.4.5'
+            ]
+          }
+        ]
+      }
+      {
+        priority: 31
+        name: 'RuleBlockCustomHeader'
+        action: 'Block'
+        ruleType: 'MatchRule'
+        matchConditions: [
+          {
+            operator: 'Contains'
+            negateCondition: false
+            transforms: [
+              'Lowercase'
+            ]
+            selector: 'x-custom-header'
+            matchVariable: 'RequestHeader'
+            matchValue: [
+              'block-me'
+            ]
+          }
+        ]
+      }
+      {
+        priority: 50
+        name: 'RuleGeoDeny'
+        action: 'Log'
+        ruleType: 'MatchRule'
+        matchConditions: [
+          {
+            operator: 'GeoMatch'
+            negateCondition: true
+            transforms: []
+            matchVariable: 'SocketAddr'
+            matchValue: [
+              'FI' // Finland
+              'AX' // Åland Islands
+              'SE' // Sweden
+              'NO' // Norway
+              'DK' // Denmark
+              'EE' // Estonia
+              'LV' // Latvia
+              'LT' // Lithuania
+            ]
+          }
+        ]
+      }
+      {
+        priority: 90
+        name: 'RuleRateLimit'
+        action: 'Block'
+        ruleType: 'RateLimitRule'
+        rateLimitThreshold: 20
+        enabledState: 'Enabled'
+        rateLimitDurationInMinutes: 1
+        groupBy: [
+          {
+            variableName: 'SocketAddr'
+          }
+        ]
+        matchConditions: [
+          {
+            operator: 'IPMatch'
+            negateCondition: true
+            matchVariable: 'SocketAddr'
+            matchValue: [
+              '255.255.255.255/32'
+            ]
+          }
+        ]
+      }
+    ]}
     managedRules: {
       managedRuleSets: [
         {

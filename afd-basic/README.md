@@ -6,6 +6,10 @@
 
 ## Setup
 
+### Demo
+
+![Demo](./images/demo.png)
+
 ### Deploy
 
 ```powershell
@@ -41,6 +45,8 @@ Check `X-Cache` header if it is `TCP_HIT` or `TCP_MISS` or `TCP_REMOTE_HIT`
 start "http://$domain"
 
 curl "http://$domain/" --verbose # Redirect to HTTPS
+
+curl "https://$domain/"
 
 curl -sIXGET "https://$domain/"
 curl -sIXGET "https://$domain/ip"
